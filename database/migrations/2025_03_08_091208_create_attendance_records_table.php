@@ -1,10 +1,8 @@
 <?php
 
-use Illuminate\Database\Seeder;
-use App\Models\User;
-use App\Models\Student;
-use Spatie\Permission\Models\Role;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
     public function up(): void {
@@ -13,7 +11,7 @@ return new class extends Migration {
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade'); // Student
             $table->foreignId('teacher_id')->constrained('users')->onDelete('restrict'); // Teacher
             $table->foreignId('school_class_id')->constrained('school_classes')->onDelete('restrict');
-            $table->foreignId('subject_id')->constrained('subjects')->onDelete('restrict'); // Subject
+            $table->foreignId('school_subject_id')->constrained('school_subjects')->onDelete('restrict');
             $table->string('grade'); // Grade at the time of attendance
             $table->date('date');
             $table->enum('status', ['on-time', 'late', 'absent'])->default('on-time');

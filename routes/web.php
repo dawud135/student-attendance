@@ -18,6 +18,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('attendance-record/create', [AttendanceRecordController::class, 'create'])->name('attendance-record.create');
     Route::post('attendance-record', [AttendanceRecordController::class, 'store'])->name('attendance-record.store');
     Route::get('attendance-record/{id}/edit', [AttendanceRecordController::class, 'edit'])->name('attendance-record.edit');
+
+    Route::post('student/search', [StudentController::class, 'search'])->name('student.search');
+    Route::post('user/search', [UserController::class, 'search'])->name('user.search');
 });
 
 require __DIR__.'/settings.php';

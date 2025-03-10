@@ -34,13 +34,28 @@ class AttendanceRecordController extends Controller
 
     public function dt(Request $request)
     {
-        $dataTable = new AttendanceRecordDataTable($request);
-        return $dataTable->render('AttendanceRecord/Index');
+        $dataTable = new AttendanceRecordDataTable();
+        $dataTable->setRequest($request);
+
+        $attendances = $dataTable->query(new AttendanceRecord())->get();
+
+        return response()->json([
+            'data' => $attendances,
+            'total' => $dataTable->getTotal(),
+        ], 201);
     }
 
     public function create()
     {
-        return inertia('AttendanceRecord/Create');
+        $attendanceRecord = new AttendanceRecord;
+        $classes = SchoolClass::select('id', 'name')->get();
+        $subjects = SchoolSubject::select('id', 'name')->get();
+        
+        return inertia('AttendanceRecord/Edit', [
+            'attendanceRecord' => $attendanceRecord,
+            'classes' => $classes,
+            'subjects' => $subjects,
+        ]);
     }
 
     // Store a new attendance record
@@ -61,7 +76,14 @@ class AttendanceRecordController extends Controller
     public function edit($id)
     {
         $attendance = AttendanceRecord::findOrFail($id);
-        return inertia('AttendanceRecord/Edit', ['attendance' => $attendance]);
+        $classes = SchoolClass::select('id', 'name')->get();
+        $subjects = SchoolSubject::select('id', 'name')->get();
+        
+        return inertia('AttendanceRecord/Edit', [
+            'attendance' => $attendance,
+            'classes' => $classes,
+            'subjects' => $subjects,
+        ]);
     }
 
     public function update(Request $request, $id)

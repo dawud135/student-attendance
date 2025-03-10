@@ -10,7 +10,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
-import { PlusIcon } from 'lucide-react'
+import { PlusIcon, PencilIcon } from 'lucide-react'
 import {
   Pagination,
   PaginationContent,
@@ -27,12 +27,17 @@ interface Column {
   data: string
 }
 
+interface AttendanceRecord {
+  id: number;
+  [key: string]: any; // for other dynamic fields
+}
+
 interface AttendanceRecordProps {
   columns: Column[]
 }
 
 export default function Index({ columns }: AttendanceRecordProps) {
-  const [records, setRecords] = useState([])
+  const [records, setRecords] = useState<AttendanceRecord[]>([])
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [loading, setLoading] = useState(false)
@@ -83,18 +88,19 @@ export default function Index({ columns }: AttendanceRecordProps) {
               {columns.map((column) => (
                 <TableHead key={column.name}>{column.title}</TableHead>
               ))}
+              <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={columns.length} className="text-center">
+                <TableCell colSpan={columns.length + 1} className="text-center">
                   Loading...
                 </TableCell>
               </TableRow>
             ) : records.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={columns.length} className="text-center">
+                <TableCell colSpan={columns.length + 1} className="text-center">
                   No records found
                 </TableCell>
               </TableRow>
@@ -106,6 +112,11 @@ export default function Index({ columns }: AttendanceRecordProps) {
                       {record[column.data]}
                     </TableCell>
                   ))}
+                  <TableCell>
+                    <Link href={route('attendance-record.edit', record.id)} className="text-blue-600 hover:text-blue-800">
+                      <PencilIcon className="w-4 h-4" />
+                    </Link>
+                  </TableCell>
                 </TableRow>
               ))
             )}
@@ -118,7 +129,7 @@ export default function Index({ columns }: AttendanceRecordProps) {
               <PaginationItem>
                 <PaginationPrevious 
                   onClick={() => handlePageChange(currentPage - 1)}
-                  disabled={currentPage === 1}
+                  isActive={currentPage === 1}
                   size="sm"
                 />
               </PaginationItem>
@@ -136,7 +147,7 @@ export default function Index({ columns }: AttendanceRecordProps) {
               <PaginationItem>
                 <PaginationNext
                   onClick={() => handlePageChange(currentPage + 1)}
-                  disabled={currentPage === totalPages}
+                  isActive={currentPage === totalPages}
                   size="sm"
                 />
               </PaginationItem>

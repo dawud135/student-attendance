@@ -9,13 +9,13 @@ use Illuminate\Validation\Rule;
 
 class AttendanceRecord extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory;
 
     protected $fillable = [
         'user_id',
         'teacher_id',
         'school_class_id',
-        'subject_id',
+        'school_subject_id',
         'grade',
         'date',
         'status',
@@ -24,7 +24,7 @@ class AttendanceRecord extends Model
     ];
 
     protected $casts = [
-        'date' => 'date',
+        'date' => 'date:Y-m-d',
         'minutes_late' => 'integer',
     ];
 
@@ -34,7 +34,7 @@ class AttendanceRecord extends Model
             'user_id' => ['required', 'exists:users,id'],
             'teacher_id' => ['required', 'exists:users,id'],
             'school_class_id' => ['required', 'exists:school_classes,id'],
-            'subject_id' => ['required', 'exists:subjects,id'],
+            'school_subject_id' => ['required', 'exists:school_subjects,id'],
             'grade' => ['required', 'string'],
             'date' => ['required', 'date'],
             'status' => ['required', Rule::in(['on-time', 'late', 'absent'])],
@@ -58,7 +58,7 @@ class AttendanceRecord extends Model
         return $this->belongsTo(SchoolClass::class);
     }
 
-    public function subject()
+    public function schoolSubject()
     {
         return $this->belongsTo(SchoolSubject::class);
     }

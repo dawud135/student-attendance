@@ -1,14 +1,6 @@
 import { useState } from 'react'
-import { Head } from '@inertiajs/react'
+import { Head, router } from '@inertiajs/react'
 import { format } from 'date-fns'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
 import {
   Select,
   SelectContent,
@@ -16,7 +8,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
 import {
@@ -24,6 +15,9 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '@/components/ui/command'
+import axios from 'axios'
+import debounce from 'lodash/debounce'
 
 interface Student {
   id: number
@@ -32,29 +26,42 @@ interface Student {
 }
 
 interface AttendanceRecordProps {
-  students: Student[]
   classes: Array<{ id: number; name: string }>
   subjects: Array<{ id: number; name: string }>
 }
 
-export default function Index({ students, classes, subjects }: AttendanceRecordProps) {
+export default function Create({ classes, subjects }: AttendanceRecordProps) {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date())
   const [selectedClass, setSelectedClass] = useState('')
   const [selectedSubject, setSelectedSubject] = useState('')
-  const [attendanceData, setAttendanceData] = useState<Record<number, {
-    status: 'on-time' | 'late' | 'absent'
-    minutesLate: number
-    reason: string
-  }>>({})
+  const [searchResults, setSearchResults] = useState<Student[]>([])
+  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
+  const [open, setOpen] = useState(false)
 
-  const handleAttendanceChange = (studentId: number, field: string, value: any) => {
-    setAttendanceData(prev => ({
-      ...prev,
-      [studentId]: {
-        ...prev[studentId],
-        [field]: value
-      }
-    }))
+  const searchStudents = debounce(async (searchTerm: string) => {
+    if (!searchTerm) {
+      setSearchResults([])
+      return
+    }
+    
+    try {
+      const response = await axios.get(`/students/search?term=${searchTerm}`)
+      setSearchResults(response.data)
+    } catch (error) {
+      console.error('Error searching students:', error)
+      setSearchResults([])
+    }
+  }, 300)
+
+  const handleSelectStudent = (student: Student) => {
+    if (!selectedStudents.find(s => s.id === student.id)) {
+      setSelectedStudents([...selectedStudents, student])
+    }
+    setOpen(false)
+  }
+
+  const handleRemoveStudent = (studentId: number) => {
+    setSelectedStudents(selectedStudents.filter(s => s.id !== studentId))
   }
 
   const handleSubmit = () => {
@@ -112,57 +119,46 @@ export default function Index({ students, classes, subjects }: AttendanceRecordP
           </Select>
         </div>
 
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Student Name</TableHead>
-              <TableHead>Grade</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Minutes Late</TableHead>
-              <TableHead>Reason</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {students.map((student) => (
-              <TableRow key={student.id}>
-                <TableCell>{student.name}</TableCell>
-                <TableCell>{student.grade}</TableCell>
-                <TableCell>
-                  <Select
-                    value={attendanceData[student.id]?.status || 'on-time'}
-                    onValueChange={(value) => handleAttendanceChange(student.id, 'status', value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="on-time">On Time</SelectItem>
-                      <SelectItem value="late">Late</SelectItem>
-                      <SelectItem value="absent">Absent</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </TableCell>
-                <TableCell>
-                  <Input
-                    type="number"
-                    min="0"
-                    value={attendanceData[student.id]?.minutesLate || 0}
-                    onChange={(e) => handleAttendanceChange(student.id, 'minutesLate', parseInt(e.target.value))}
-                    disabled={attendanceData[student.id]?.status !== 'late'}
-                    className="w-24"
-                  />
-                </TableCell>
-                <TableCell>
-                  <Input
-                    value={attendanceData[student.id]?.reason || ''}
-                    onChange={(e) => handleAttendanceChange(student.id, 'reason', e.target.value)}
-                    disabled={attendanceData[student.id]?.status === 'on-time'}
-                  />
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+        <div className="mb-6">
+          <Select
+            value={selectedStudent?.id.toString()}
+            onValueChange={(value) => {
+              const student = searchResults.find(s => s.id.toString() === value);
+              setSelectedStudent(student || null);
+            }}
+          >
+            <SelectTrigger className="w-[400px]">
+              <SelectValue placeholder="Select student" />
+            </SelectTrigger>
+            <SelectContent>
+              <CommandInput 
+                placeholder="Search students..."
+                onValueChange={(value) => {
+                  router.get(
+                    route('api.students.search'),
+                    { search: value },
+                    {
+                      preserveState: true,
+                      preserveScroll: true,
+                      only: ['searchResults']
+                    }
+                  );
+                }}
+              />
+              {searchResults.map((student) => (
+                <SelectItem key={student.id} value={student.id.toString()}>
+                  {student.name} - {student.grade}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          {selectedStudent && (
+            <div className="mt-4 p-2 border rounded flex items-center justify-between">
+              <span>{selectedStudent.name} - {selectedStudent.grade}</span>
+            </div>
+          )}
+        </div>
 
         <div className="mt-6">
           <Button onClick={handleSubmit}>Save Attendance</Button>

@@ -18,6 +18,8 @@ use Inertia\Inertia;
 class AttendanceRecordDataTable extends DataTable
 {
     public $student;
+    public $page = 1;
+    public $perPage;
 
     /**
      * Build the DataTable class.
@@ -42,17 +44,25 @@ class AttendanceRecordDataTable extends DataTable
     public function query(AttendanceRecord $model): QueryBuilder
     {
         $query = $model->select($this->getSelects())
-                    ->join('students', 'students.id', 'attendance_records.student_id')
-                    ->join('users', 'users.id', 'students.user_id')
+                    ->join('users', 'users.id', 'attendance_records.user_id')
                     ->join('school_classes', 'school_classes.id', 'attendance_records.school_class_id')
-                    ->join('subjects', 'subjects.id', 'attendance_records.subject_id')
-                    ->join('teachers', 'teachers.id', 'attendance_records.teacher_id');
+                    ->join('school_subjects', 'school_subjects.id', 'attendance_records.school_subject_id')    
+                    ->join('users as teachers', 'teachers.id', 'attendance_records.teacher_id');
 
         if(!empty($this->student)){
-            $query->where('kodeinstansi', $this->student->KodeDetail);
+            $query->where('attendance_records.student_id', $this->student->id);
+        }
+
+        if(!empty($this->page) && !empty($this->perPage)){
+            $query->skip(($this->page - 1) * $this->perPage)->take($this->perPage);
         }
 
         return $query;
+    }
+
+    public function getTotal()
+    {
+        return $this->query(new AttendanceRecord())->count();
     }
 
     /**
@@ -89,12 +99,12 @@ class AttendanceRecordDataTable extends DataTable
             Column::make('users.name as student_name')
                     ->title('Nama Siswa')
                     ->data('student_name'),
-            Column::make('grade')
+            Column::make('attendance_records.grade')
                     ->title('Tingkat')
                     ->data('grade'),
-            Column::make('class_subject')
+            Column::make('school_subjects.name as subject_name')
                     ->title('Mata Pelajaran')
-                    ->data('class_subject'),
+                    ->data('subject_name'),
             Column::make('teachers.name as teacher_name')
                     ->title('Guru')
                     ->data('teacher_name'),
@@ -136,5 +146,11 @@ class AttendanceRecordDataTable extends DataTable
     protected function filename(): string
     {
         return 'AttendanceRecord_' . date('YmdHis');
+    }
+
+    public function setRequest($request)
+    {
+        $this->page = $request->get('page', 1);
+        $this->perPage = $request->get('per_page', 10);
     }
 }
