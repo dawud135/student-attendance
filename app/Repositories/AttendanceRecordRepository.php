@@ -105,6 +105,10 @@ class AttendanceRecordRepository extends BaseRepository
             $query->where('date', '<=', $endDt);
         }
 
+        if(isset($params['user_id']) && !empty($params['user_id'])) {
+            $query->where('user_id', $params['user_id']);
+        }
+
         $data = $query->selectRaw('MONTHNAME(date) as month, COUNT(1) as qty')
             ->groupBy('month')
             ->get()
@@ -145,6 +149,10 @@ class AttendanceRecordRepository extends BaseRepository
 
         if(!empty($endDt)) {
             $query->where('date', '<=', $endDt);
+        }
+
+        if(isset($params['user_id']) && !empty($params['user_id'])) {
+            $query->where('attendance_records.user_id', $params['user_id']);
         }
 
         $data = $query->selectRaw('school_subject_id, coalesce(school_subjects.name, "Unknown") as school_subject_name, COUNT(*) as qty')

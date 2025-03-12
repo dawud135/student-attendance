@@ -1,7 +1,7 @@
 import { PlaceholderPattern } from '@/components/ui/placeholder-pattern';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head, usePage, useForm } from '@inertiajs/react';
+import { Head, usePage, useForm, router } from '@inertiajs/react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -48,16 +48,18 @@ export default function Dashboard() {
     const { props } = usePage(); // Get the full page props
 
     const { 
+        userStudent,    
         latePerMonthChartData, 
         latePerSchoolSubjectChartData,
     } = props as Partial<{
+        userStudent: User;
         latePerMonthChartData: ChartData<"line", (number | Point | null)[], unknown>;
         latePerSchoolSubjectChartData: ChartData<"bar", (number | [number, number] | null)[], unknown>;
     }>;
         
     const [searchUserStudentTerm, setSearchUserStudentTerm] = useState("");
     const [searchStudentResults, setSearchStudentResults] = useState<Student[]>([]);
-    const [selectedUserStudent, setSelectedUserStudent] = useState<User | null>(null);
+    const [selectedUserStudent, setSelectedUserStudent] = useState<User | null>(userStudent ?? null);
     const [isUserStudentPopoverOpen, setIsUserStudentPopoverOpen] = useState(false);
 
     const { data, setData, post, processing, errors } = useForm({
@@ -76,6 +78,13 @@ export default function Dashboard() {
             });
             setSearchStudentResults(data.data);
         }
+    };
+
+    // Add URL update function
+    const refreshPageData = (userId: number | null) => {
+        router.get(route("dashboard"), {
+            user_id: userId
+        });
     };
 
     return (
@@ -106,6 +115,7 @@ export default function Dashboard() {
                                             onClick={(e) => {
                                                 setSelectedUserStudent(userStudent);
                                                 setIsUserStudentPopoverOpen(false);
+                                                refreshPageData(userStudent.id);
                                             }}
                                         >
                                             {userStudent.name}
@@ -122,6 +132,7 @@ export default function Dashboard() {
                             className="p-2 rounded-full bg-gray-200 hover:bg-gray-300 transition"
                             onClick={() => {
                                 setSelectedUserStudent(null);
+                                refreshPageData(null);
                             }}
                         >
                             <X className="w-4 h-4 text-gray-600" />
@@ -156,7 +167,7 @@ export default function Dashboard() {
                     <div className="border-sidebar-border/70 dark:border-sidebar-border relative rounded-xl border">
                         {/* Bar Chart Container */}
                         <div className="bg-white p-6 rounded-lg shadow-md mx-0">
-                            <h3 className="text-lg font-semibold text-gray-700 mb-3">Golongan Darah</h3>
+                            <h3 className="text-lg font-semibold text-gray-700 mb-3">Late Attendance by Subject</h3>
                             <div className="h-[400px]">
                                 {latePerSchoolSubjectChartData ? (
                                 <Bar data={latePerSchoolSubjectChartData} options={{ 
