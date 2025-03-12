@@ -90,7 +90,7 @@ export default function Edit({ attendanceRecord, classes, subjects }: Props) {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <Field attendanceRecord={attendanceRecord} classes={classes} subjects={subjects} onChangeAttendanceRecord={handleChangeAttendanceRecord} />
+          <Field attendanceRecord={attendanceRecord} classes={classes} subjects={subjects} onChangeAttendanceRecord={handleChangeAttendanceRecord} errors={errors} />
 
           <div className="flex justify-end" >
             <Button type="submit" disabled={processing}>
@@ -101,7 +101,6 @@ export default function Edit({ attendanceRecord, classes, subjects }: Props) {
                 <ArrowLeftSquareIcon /> Back
               </Link>
             </Button>
-            
           </div>
         </form>
       </CardContent>

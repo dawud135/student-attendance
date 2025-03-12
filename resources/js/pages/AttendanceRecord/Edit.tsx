@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/select";
 import { useDebounce } from "@/hooks/useDebounce";
 import axios from "axios";
-import { X } from "lucide-react";
+import { ArrowLeftSquareIcon, Link, X } from "lucide-react";
 import AttendanceRecord from "@/models/AttendanceRecord";
 import Field from "./partials/Field";
 import { toast } from "sonner"
@@ -76,11 +76,16 @@ export default function Edit({ attendanceRecord, classes, subjects }: Props) {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <Field attendanceRecord={attendanceRecord} classes={classes} subjects={subjects} onChangeAttendanceRecord={handleChangeAttendanceRecord} />
+          <Field attendanceRecord={attendanceRecord} classes={classes} subjects={subjects} onChangeAttendanceRecord={handleChangeAttendanceRecord} errors={errors} is_edit={true} />
 
-          <div>
+          <div className="flex justify-end" >
             <Button type="submit" disabled={processing}>
-              Save
+              Update
+            </Button>
+            <Button variant="outline" asChild>
+              <Link href={route("attendance-record.index")} className="ml-2 flex">
+                <ArrowLeftSquareIcon /> Back
+              </Link>
             </Button>
           </div>
         </form>

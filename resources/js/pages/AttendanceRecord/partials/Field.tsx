@@ -27,6 +27,10 @@ interface Props {
     attendanceRecord: AttendanceRecord;
     classes: Array<{ id: number; name: string }>;
     subjects: Array<{ id: number; name: string }>;
+    errors?: {
+        [key: string]: string;
+    };
+    is_edit?: boolean;
     onChangeAttendanceRecord?: (attendanceRecord: {
         id: number;
         user_id: number;
@@ -41,7 +45,7 @@ interface Props {
     }) => void;
 }
 
-export default function Field({ attendanceRecord, classes, subjects, onChangeAttendanceRecord }: Props) {
+export default function Field({ attendanceRecord, classes, subjects, errors, is_edit, onChangeAttendanceRecord }: Props) {
     const [searchUserStudentTerm, setSearchUserStudentTerm] = useState("");
     const [searchUserStudentResults, setSearchUserStudentResults] = useState<User[]>([]);
     const [selectedUserStudent, setSelectedUserStudent] = useState<User | null>(
@@ -55,7 +59,7 @@ export default function Field({ attendanceRecord, classes, subjects, onChangeAtt
     const [isStudentPopoverOpen, setIsStudentPopoverOpen] = useState(false);
     const [isTeacherPopoverOpen, setIsTeacherPopoverOpen] = useState(false);
 
-    const { data, setData, post, processing, errors } = useForm({
+    const { data, setData, post, processing } = useForm({
         id: attendanceRecord.id,
         user_id: attendanceRecord.user_id,
         teacher_id: attendanceRecord.teacher_id,
@@ -116,7 +120,11 @@ export default function Field({ attendanceRecord, classes, subjects, onChangeAtt
             <div className="space-y-2">
                 <Label>Student</Label>
                 <div className="flex items-center gap-2 mr-5">
-                    <Popover open={isStudentPopoverOpen} onOpenChange={setIsStudentPopoverOpen}>
+                    <Popover open={isStudentPopoverOpen} onOpenChange={(open) => {
+                        if (!is_edit) {
+                            setIsStudentPopoverOpen(open);
+                        }
+                    }}>
                         <PopoverTrigger asChild>
                             <Button variant="outline" className="w-full justify-start">
                                 {selectedUserStudent ? selectedUserStudent.name : "Select student..."}
@@ -151,7 +159,7 @@ export default function Field({ attendanceRecord, classes, subjects, onChangeAtt
                         </PopoverContent>
                     </Popover>
                     {/* Clear Selection Button */}
-                    {selectedUserStudent && (
+                    {selectedUserStudent && !is_edit && (
                         <button
                             type="button"
                             className="p-2 rounded-full bg-gray-200 hover:bg-gray-300 transition"
@@ -165,7 +173,18 @@ export default function Field({ attendanceRecord, classes, subjects, onChangeAtt
                         </button>
                     )}
                 </div>
-                {errors.user_id && <p className="text-red-500 text-sm">{errors.user_id}</p>}
+                {errors?.user_id && <p className="text-red-500 text-sm">{errors.user_id}</p>}
+            </div>
+
+            <div className="space-y-2">
+                <Label>Grade</Label>
+                <Input
+                    type="text"
+                    value={data.grade}
+                    onChange={(e) => updateData("grade", e.target.value)}
+                    disabled
+                />
+                {errors?.grade && <p className="text-red-500 text-sm">{errors.grade}</p>}
             </div>
 
             <div className="space-y-2">
@@ -220,7 +239,7 @@ export default function Field({ attendanceRecord, classes, subjects, onChangeAtt
                         </button>
                     )}
                 </div>
-                {errors.teacher_id && <p className="text-red-500 text-sm">{errors.teacher_id}</p>}
+                {errors?.teacher_id && <p className="text-red-500 text-sm">{errors.teacher_id}</p>}
             </div>
 
             <div className="space-y-2">
@@ -240,7 +259,7 @@ export default function Field({ attendanceRecord, classes, subjects, onChangeAtt
                         ))}
                     </SelectContent>
                 </Select>
-                {errors.school_class_id && <p className="text-red-500 text-sm">{errors.school_class_id}</p>}
+                {errors?.school_class_id && <p className="text-red-500 text-sm">{errors.school_class_id}</p>}
             </div>
 
             <div className="space-y-2">
@@ -260,17 +279,7 @@ export default function Field({ attendanceRecord, classes, subjects, onChangeAtt
                         ))}
                     </SelectContent>
                 </Select>
-                {errors.school_subject_id && <p className="text-red-500 text-sm">{errors.school_subject_id}</p>}
-            </div>
-
-            <div className="space-y-2">
-                <Label>Grade</Label>
-                <Input
-                    type="text"
-                    value={data.grade}
-                    onChange={(e) => updateData("grade", e.target.value)}
-                />
-                {errors.grade && <p className="text-red-500 text-sm">{errors.grade}</p>}
+                {errors?.school_subject_id && <p className="text-red-500 text-sm">{errors.school_subject_id}</p>}
             </div>
 
             <div className="space-y-2">
@@ -280,7 +289,7 @@ export default function Field({ attendanceRecord, classes, subjects, onChangeAtt
                     value={data.date}
                     onChange={(e) => updateData("date", e.target.value)}
                 />
-                {errors.date && <p className="text-red-500 text-sm">{errors.date}</p>}
+                {errors?.date && <p className="text-red-500 text-sm">{errors.date}</p>}
             </div>
 
             <div className="space-y-2">
@@ -298,7 +307,7 @@ export default function Field({ attendanceRecord, classes, subjects, onChangeAtt
                         <SelectItem value="late">Late</SelectItem>
                     </SelectContent>
                 </Select>
-                {errors.status && <p className="text-red-500 text-sm">{errors.status}</p>}
+                {errors?.status && <p className="text-red-500 text-sm">{errors.status}</p>}
             </div>
 
             <div className="space-y-2">
@@ -308,7 +317,7 @@ export default function Field({ attendanceRecord, classes, subjects, onChangeAtt
                     value={data.minutes_late}
                     onChange={(e) => updateData("minutes_late", parseInt(e.target.value))}
                 />
-                {errors.minutes_late && <p className="text-red-500 text-sm">{errors.minutes_late}</p>}
+                {errors?.minutes_late && <p className="text-red-500 text-sm">{errors.minutes_late}</p>}
             </div>
 
             <div className="space-y-2">
@@ -318,7 +327,7 @@ export default function Field({ attendanceRecord, classes, subjects, onChangeAtt
                     value={data.reason}
                     onChange={(e) => updateData("reason", e.target.value)}
                 />
-                {errors.reason && <p className="text-red-500 text-sm">{errors.reason}</p>}
+                {errors?.reason && <p className="text-red-500 text-sm">{errors.reason}</p>}
             </div>
         </>
     );

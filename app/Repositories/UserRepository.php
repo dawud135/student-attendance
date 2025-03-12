@@ -44,7 +44,7 @@ class UserRepository extends BaseRepository
         $limit = $payload['limit'] ?? 12;
         $role = $payload['role'] ?? null;
 
-        $query = User::query();
+        $query = User::with('student');
 
         if(!empty($search_text)){
             $query->where(function ($q) use ($search_text) {
