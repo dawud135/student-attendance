@@ -7,12 +7,18 @@ use App\Models\SchoolClass;
 class SchoolClassSeeder extends Seeder {
     public function run(): void {
         $classes = [
-            ['name' => 'Class 11A'],
-            ['name' => 'Class 11B'],
-            ['name' => 'Class 12A'],
-            ['name' => 'Class 12B'],
-            ['name' => 'Class 13A'],
-            ['name' => 'Class 13B'],
+            ['name' => 'Class 7A'],
+            ['name' => 'Class 7B'],
+            ['name' => 'Class 8A'],
+            ['name' => 'Class 8B'],
+            ['name' => 'Class 9A'],
+            ['name' => 'Class 9B'],
+            ['name' => 'Class 10A'],
+            ['name' => 'Class 10B'],
+            ['name' => 'Language Laboratory'],
+            ['name' => 'Computer Laboratory'],
+            ['name' => 'Chemistry Laboratory'],
+            
         ];
 
         foreach ($classes as $class) {

@@ -9,6 +9,10 @@ use Illuminate\Validation\Rule;
 
 class AttendanceRecord extends Model
 {
+    public const STATUS_ON_TIME = 'on-time';
+    public const STATUS_LATE = 'late';
+    public const STATUS_ABSENT = 'absent';
+
     use HasFactory;
 
     protected $fillable = [
@@ -43,7 +47,7 @@ class AttendanceRecord extends Model
         ];
     }
 
-    public function student()
+    public function user()
     {
         return $this->belongsTo(User::class, 'user_id');
     }

@@ -28,6 +28,14 @@ class Student extends Model {
         'deleted_at' => 'datetime',
     ];
 
+    protected $appends = [
+        'name',
+    ];
+
+    public function getNameAttribute() {
+        return $this->user?->name;
+    }
+
     /**
      * Relationship: Student belongs to a User (who is a student).
      */

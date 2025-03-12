@@ -11,7 +11,7 @@ class UserSearchRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,9 +22,11 @@ class UserSearchRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'search' => 'required|string|max:255',
-            'role' => 'required|string|in:student,teacher,admin',
-            'limit' => 'required|integer|min:1|max:1000',
+            'search' => 'array',
+            'search.value' => 'nullable|string|max:255',
+            'search.regex' => 'nullable|boolean',
+            'role' => 'nullable|string|in:student,teacher,admin',
+            'limit' => 'nullable|integer|min:1|max:1000|default:12',
         ];
     }
 }

@@ -8,21 +8,23 @@ use App\Models\Student;
 use App\Models\SchoolClass;
 use App\Models\SchoolSubject;
 use App\DataTables\StudentDataTable;
+use App\Http\Requests\StudentSearchRequest;
 use Inertia\Inertia;
+use App\Repositories\StudentRepository;
 
 class StudentController extends Controller
 {
+    private $repository;
 
-    public function search(Request $request)
+    public function __construct(StudentRepository $studentRepository){
+        $this->repository = $studentRepository;
+    }
+
+
+    public function search(StudentSearchRequest $request)
     {
-        $dataTable = new StudentDataTable();
-        $dataTable->setRequest($request);
+        $searchResult = $this->repository->search($request->search['value'], $request->limit);
 
-        $attendances = $dataTable->query(new Student())->get();
-
-        return response()->json([
-            'data' => $attendances,
-            'total' => $dataTable->getTotal(),
-        ], 201);
+        return response()->json($searchResult, 201);
     }
 }

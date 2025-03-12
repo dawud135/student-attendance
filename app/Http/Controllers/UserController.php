@@ -9,21 +9,22 @@ use App\Models\SchoolClass;
 use App\Models\SchoolSubject;
 use App\DataTables\UserDataTable;
 use App\Http\Requests\UserSearchRequest;
+use App\Repositories\UserRepository;
 use Inertia\Inertia;
 
 class UserController extends Controller
 {
+    private $repository;
+
+    public function __construct(UserRepository $userRepository){
+        $this->repository = $userRepository;
+    }
+
     public function search(UserSearchRequest $request)
     {
-        $dataTable = new UserDataTable();
-        $dataTable->setRequest($request);
+        $searchResult = $this->repository->search($request->all());
 
-        $attendances = $dataTable->query(new User())->get();
-
-        return response()->json([
-            'data' => $attendances,
-            'total' => $dataTable->getTotal(),
-        ], 201);
+        return response()->json($searchResult, 201);
     }
 
 }

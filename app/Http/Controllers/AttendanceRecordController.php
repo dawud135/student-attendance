@@ -10,6 +10,8 @@ use App\Models\SchoolClass;
 use App\Models\SchoolSubject;
 use App\DataTables\AttendanceRecordDataTable;
 use Inertia\Inertia;
+use App\Http\Requests\AttendanceRecordFieldRequest;
+use Illuminate\Support\Facades\DB;
 
 class AttendanceRecordController extends Controller
 {
@@ -41,13 +43,49 @@ class AttendanceRecordController extends Controller
 
         return response()->json([
             'data' => $attendances,
-            'total' => $dataTable->getTotal(),
+            'total' => $dataTable->getTotal(new AttendanceRecord()),
         ], 201);
     }
 
     public function create()
     {
         $attendanceRecord = new AttendanceRecord;
+        $attendanceRecord->teacher_id = auth()->user()->id;
+        $attendanceRecord->date = now();
+        $attendanceRecord->status = AttendanceRecord::STATUS_LATE;
+        
+        $classes = SchoolClass::select('id', 'name')->get();
+        $subjects = SchoolSubject::select('id', 'name')->get();
+        
+        return inertia('AttendanceRecord/Create', [
+            'attendanceRecord' => $attendanceRecord,
+            'classes' => $classes,
+            'subjects' => $subjects,
+        ]);
+    }
+
+    // Store a new attendance record
+    public function store(AttendanceRecordFieldRequest $request)
+    {
+        try {
+            DB::beginTransaction();
+
+            $attendance = AttendanceRecord::create($request->all());
+            
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->withInput();
+        }
+        
+        return redirect()->route('attendance-record.index')->with('success', 'Attendance record has been created successfully.');
+    }
+
+    public function edit($id)
+    {
+        $attendanceRecord = AttendanceRecord::findOrFail($id);
+        $attendanceRecord->load('user', 'teacher', 'schoolClass', 'schoolSubject');
+
         $classes = SchoolClass::select('id', 'name')->get();
         $subjects = SchoolSubject::select('id', 'name')->get();
         
@@ -58,38 +96,22 @@ class AttendanceRecordController extends Controller
         ]);
     }
 
-    // Store a new attendance record
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'student_id' => ['required', 'exists:users,id'],
-            'subject_id' => ['required', 'exists:school_subjects,id'],
-            'teacher_id' => ['required', 'exists:users,id'],
-            'grade' => ['required', 'unsignedTinyInteger'],
-            'late_minutes' => ['required', 'integer', 'min:0'],
-        ]);
-
-        $attendance = AttendanceRecord::create($validated);
-        return response()->json($attendance, 201);
-    }
-
-    public function edit($id)
-    {
-        $attendance = AttendanceRecord::findOrFail($id);
-        $classes = SchoolClass::select('id', 'name')->get();
-        $subjects = SchoolSubject::select('id', 'name')->get();
-        
-        return inertia('AttendanceRecord/Edit', [
-            'attendance' => $attendance,
-            'classes' => $classes,
-            'subjects' => $subjects,
-        ]);
-    }
-
     public function update(Request $request, $id)
     {
         $attendance = AttendanceRecord::findOrFail($id);
-        $attendance->update($request->all());
-        return response()->json($attendance, 200);
+
+        try {
+            DB::beginTransaction();
+
+            $attendance->update($request->all());
+            
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->withInput();
+        }
+        
+        return redirect()->route('attendance-record.index')
+        ->with('success', 'Attendance record has been updated successfully.');
     }
 }

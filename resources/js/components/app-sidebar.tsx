@@ -15,7 +15,7 @@ const mainNavItems: NavItem[] = [
     },
     {
         title: 'Attendance Record',
-        url: route('attendance-record'),
+        url: route('attendance-record.index'),
         icon: ClipboardListIcon,
     },
 ];
@@ -23,13 +23,8 @@ const mainNavItems: NavItem[] = [
 const footerNavItems: NavItem[] = [
     {
         title: 'Repository',
-        url: 'https://github.com/laravel/react-starter-kit',
+        url: 'https://github.com/dawud135/student-attendance',
         icon: Folder,
-    },
-    {
-        title: 'Documentation',
-        url: 'https://laravel.com/docs/starter-kits',
-        icon: BookOpen,
     },
 ];
 

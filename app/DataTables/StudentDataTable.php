@@ -2,7 +2,7 @@
 
 namespace App\DataTables;
 
-use App\Models\AttendanceRecord;
+use App\Models\Student;
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
 use Illuminate\Support\Facades\DB;
 use Yajra\DataTables\EloquentDataTable;
@@ -15,7 +15,7 @@ use Yajra\DataTables\Services\DataTable;
 
 use Inertia\Inertia;
 
-class AttendanceRecordDataTable extends DataTable
+class StudentDataTable extends DataTable
 {
     public $student;
     public $page = 1;
@@ -31,34 +31,20 @@ class AttendanceRecordDataTable extends DataTable
         return (new EloquentDataTable($query))
             ->addColumn('action', function ($row) {
                 // Pass any required data to the front-end
-                return view('attendance_record/partials/action', [
+                return view('student/partials/action', [
                     'row' => $row,
                 ]);
             })
             ->setRowId('id');
     }
 
-    private function getBaseQuery(AttendanceRecord $model): QueryBuilder
-    {
-        $query = $model->select($this->getSelects())
-                    ->join('users', 'users.id', 'attendance_records.user_id')
-                    ->join('school_classes', 'school_classes.id', 'attendance_records.school_class_id')
-                    ->join('school_subjects', 'school_subjects.id', 'attendance_records.school_subject_id')    
-                    ->join('users as teachers', 'teachers.id', 'attendance_records.teacher_id');
-
-        if(!empty($this->student)){
-            $query->where('attendance_records.student_id', $this->student->id);
-        }
-
-        return $query;
-    }
-
     /**
      * Get the query source of dataTable.
      */
-    public function query(AttendanceRecord $model): QueryBuilder
+    public function query(Student $model): QueryBuilder
     {
-        $query = $this->getBaseQuery($model);
+        $query = $model->select($this->getSelects())
+                    ->join('users', 'users.id', 'students.user_id');
 
         if(!empty($this->page) && !empty($this->perPage)){
             $query->skip(($this->page - 1) * $this->perPage)->take($this->perPage);
@@ -67,9 +53,9 @@ class AttendanceRecordDataTable extends DataTable
         return $query;
     }
 
-    public function getTotal(AttendanceRecord $model)
+    public function getTotal()
     {
-        return $this->getBaseQuery($model)->count();
+        return $this->query(new Student())->count();
     }
 
     /**
@@ -78,7 +64,7 @@ class AttendanceRecordDataTable extends DataTable
     public function html(): HtmlBuilder
     {
         return $this->builder()
-                    ->setTableId('AttendanceRecord-table')
+                    ->setTableId('Student-table')
                     ->columns($this->getColumns())
                     ->minifiedAjax()
                     //->dom('Bfrtip')
@@ -100,33 +86,20 @@ class AttendanceRecordDataTable extends DataTable
     public function getColumns(): array
     {
         return [
-            Column::make('date')
-                    ->title('Tanggal')
-                    ->data('date'),
             Column::make('users.name as student_name')
                     ->title('Nama Siswa')
                     ->data('student_name'),
-            Column::make('attendance_records.grade')
+            Column::make('users.email as student_email')
+                    ->title('Email Siswa')
+                    ->data('student_email'),
+            Column::make('students.nis')
+                    ->title('NIS')
+                    ->data('nis'),
+            Column::make('students.grade')
                     ->title('Tingkat')
                     ->data('grade'),
-            Column::make('school_subjects.name as subject_name')
-                    ->title('Mata Pelajaran')
-                    ->data('subject_name'),
-            Column::make('teachers.name as teacher_name')
-                    ->title('Guru')
-                    ->data('teacher_name'),
-            Column::make('school_classes.name as class_name')
-                    ->title('Kelas')
-                    ->data('class_name'),
-            
-            Column::make('status')
-                    ->title('Status')
-                    ->data('status'),
-            Column::make('minutes_late')
-                    ->title('Terlambat (menit)')
-                    ->data('minutes_late'),
             Column::computed('action')
-                  ->name('attendance_records.id')
+                  ->name('students.id')
                   ->exportable(false)
                   ->printable(false)
                   ->sortable(false)
@@ -152,7 +125,7 @@ class AttendanceRecordDataTable extends DataTable
      */
     protected function filename(): string
     {
-        return 'AttendanceRecord_' . date('YmdHis');
+        return 'Student_' . date('YmdHis');
     }
 
     public function setRequest($request)

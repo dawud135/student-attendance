@@ -51,7 +51,13 @@ export default function Index({ columns }: AttendanceRecordProps) {
         const response = await fetch(route('attendance-record.dt', {
           page: currentPage,
           per_page: perPage
-        }))
+        }), {
+          headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+            'Accept': 'application/json'
+          },
+          credentials: 'include'
+        })
         const data = await response.json()
         setRecords(data.data)
         setTotalPages(Math.ceil(data.total / perPage))
@@ -127,7 +133,7 @@ export default function Index({ columns }: AttendanceRecordProps) {
           <Pagination>
             <PaginationContent>
               <PaginationItem>
-                <PaginationPrevious 
+                <PaginationPrevious
                   onClick={() => handlePageChange(currentPage - 1)}
                   isActive={currentPage === 1}
                   size="sm"
