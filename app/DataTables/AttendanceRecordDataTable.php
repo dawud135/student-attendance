@@ -20,6 +20,7 @@ class AttendanceRecordDataTable extends DataTable
     public $student;
     public $page = 1;
     public $perPage;
+    public $search;
 
     /**
      * Build the DataTable class.
@@ -49,6 +50,15 @@ class AttendanceRecordDataTable extends DataTable
         if(!empty($this->student)){
             $query->where('attendance_records.student_id', $this->student->id);
         }
+        
+        if(!empty($this->search) && !empty($this->search['value'])){
+            $query->where(function($query){
+                $query->where('users.name', 'like', '%' . $this->search['value'] . '%')  
+                ->orWhere('users.email', 'like', '%' . $this->search['value'] . '%')
+                ->orWhere('school_classes.name', 'like', '%' . $this->search['value'] . '%')
+                ->orWhere('school_subjects.name', 'like', '%' . $this->search['value'] . '%');
+            });
+        }   
 
         return $query;
     }
@@ -159,5 +169,6 @@ class AttendanceRecordDataTable extends DataTable
     {
         $this->page = $request->get('page', 1);
         $this->perPage = $request->get('per_page', 10);
+        $this->search = $request->get('search', null);
     }
 }

@@ -1,4 +1,4 @@
-import { router, useForm } from "@inertiajs/react";
+import { router, useForm, Link } from "@inertiajs/react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/select";
 import { useDebounce } from "@/hooks/useDebounce";
 import axios from "axios";
-import { ArrowLeftSquareIcon, Link, X } from "lucide-react";
+import { ArrowLeftSquareIcon, X } from "lucide-react";
 import AttendanceRecord from "@/models/AttendanceRecord";
 import Field from "./partials/Field";
 import { toast } from "sonner"

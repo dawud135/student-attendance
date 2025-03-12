@@ -20,6 +20,7 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination"
 import { router } from '@inertiajs/react'
+import { Input } from '@headlessui/react'
 
 interface Column {
   name: string
@@ -41,6 +42,7 @@ export default function Index({ columns }: AttendanceRecordProps) {
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [loading, setLoading] = useState(false)
+  const [search, setSearch] = useState('')
   const perPage = 10
 
   // Fetch attendance records on mount or when page changes
@@ -50,7 +52,11 @@ export default function Index({ columns }: AttendanceRecordProps) {
       try {
         const response = await fetch(route('attendance-record.dt', {
           page: currentPage,
-          per_page: perPage
+          per_page: perPage,
+          search: {
+            value: search,
+            regex: false
+          }
         }), {
           headers: {
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
@@ -67,11 +73,16 @@ export default function Index({ columns }: AttendanceRecordProps) {
       setLoading(false)
     }
     fetchRecords()
-  }, [currentPage])
+  }, [currentPage, search])
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page)
   }
+
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearch(e.target.value)
+  }
+
 
   return (
     <>
@@ -88,11 +99,19 @@ export default function Index({ columns }: AttendanceRecordProps) {
           </Button>
         </div>
 
+        <div className="flex justify-end items-center mb-6">
+          <Input
+            onChange={handleSearch}
+            className="w-1/2 p-2 rounded-md border border-gray-300" />
+        </div>
+
         <Table>
           <TableHeader>
             <TableRow>
               {columns.map((column) => (
-                <TableHead key={column.name}>{column.title}</TableHead>
+                <TableHead key={column.name}>
+                  {column.title}
+                </TableHead>
               ))}
               <TableHead>Actions</TableHead>
             </TableRow>
@@ -153,7 +172,7 @@ export default function Index({ columns }: AttendanceRecordProps) {
               <PaginationItem>
                 <PaginationNext
                   onClick={() => handlePageChange(currentPage + 1)}
-                  isActive={currentPage === totalPages}
+                  isActive={currentPage <= totalPages}
                   size="sm"
                 />
               </PaginationItem>
