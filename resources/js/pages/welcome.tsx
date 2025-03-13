@@ -83,13 +83,13 @@ export default function Welcome() {
                                         </span>
                                     </span>
                                     <span>
-                                        Watch video tutorials at
+                                        Repository
                                         <a
-                                            href="https://laracasts.com"
+                                            href="https://github.com/dawud135/student-attendance"
                                             target="_blank"
                                             className="ml-1 inline-flex items-center space-x-1 font-medium text-[#f53003] underline underline-offset-4 dark:text-[#FF4433]"
                                         >
-                                            <span>Laracasts</span>
+                                            <span>Repository</span>
                                             <svg
                                                 width={10}
                                                 height={11}
