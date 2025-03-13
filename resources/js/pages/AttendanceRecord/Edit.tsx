@@ -1,4 +1,4 @@
-import { router, useForm, Link } from "@inertiajs/react";
+import { router, useForm, Link, Head } from "@inertiajs/react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,7 +24,15 @@ import Field from "./partials/Field";
 import { toast } from "sonner"
 import Student from "@/models/Student";
 import User from "@/models/User";
+import AppLayout from '@/layouts/app-layout';
+import { type BreadcrumbItem } from '@/types';
 
+const breadcrumbs: BreadcrumbItem[] = [
+  {
+    title: 'Attendance Record',
+    href: route('attendance-record.index'),
+  },
+];
 interface Props {
   attendanceRecord: AttendanceRecord;
   classes: Array<{ id: number; name: string }>;
@@ -70,26 +78,31 @@ export default function Edit({ attendanceRecord, classes, subjects }: Props) {
   };
 
   return (
-    <Card className="max-w-2xl mx-auto">
-      <CardHeader>
-        <CardTitle>Create Attendance Record</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <Field attendanceRecord={attendanceRecord} classes={classes} subjects={subjects} onChangeAttendanceRecord={handleChangeAttendanceRecord} errors={errors} is_edit={true} />
-
-          <div className="flex justify-end" >
-            <Button type="submit" disabled={processing}>
-              Update
-            </Button>
-            <Button variant="outline" asChild>
-              <Link href={route("attendance-record.index")} className="ml-2 flex">
-                <ArrowLeftSquareIcon /> Back
-              </Link>
-            </Button>
-          </div>
-        </form>
-      </CardContent>
-    </Card>
+    <AppLayout breadcrumbs={breadcrumbs}>
+      <Head title="Edit Attendance Record" />
+      <Card className="max-w-2xl mx-auto">
+        <CardHeader>
+          <CardTitle>Edit Attendance Record</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid auto-rows-min gap-4 md:grid-cols-2">
+              <Field attendanceRecord={attendanceRecord} classes={classes} subjects={subjects} onChangeAttendanceRecord={handleChangeAttendanceRecord} errors={errors} is_edit={true} />
+            </div>
+            
+            <div className="flex justify-end" >
+              <Button type="submit" disabled={processing}>
+                Update
+              </Button>
+              <Button variant="outline" asChild>
+                <Link href={route("attendance-record.index")} className="ml-2 flex">
+                  <ArrowLeftSquareIcon /> Back
+                </Link>
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
+    </AppLayout>
   );
 }

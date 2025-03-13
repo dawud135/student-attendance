@@ -39,23 +39,9 @@ class AttendanceRecordController extends Controller
         $dataTable = new AttendanceRecordDataTable();
         $dataTable->setRequest($request);
 
-        $query = $dataTable->query(new AttendanceRecord());
-        
-        if(!empty($request->search) && !empty($request->search['value'])){
-            $query->where(function($query) use ($request){
-                $query->where('users.name', 'like', '%' . $request->search['value'] . '%')  
-                ->orWhere('users.email', 'like', '%' . $request->search['value'] . '%')
-                ->orWhere('school_classes.name', 'like', '%' . $request->search['value'] . '%')
-                ->orWhere('school_subjects.name', 'like', '%' . $request->search['value'] . '%');
-            });
-        }   
+        $response = $dataTable->search($request);
 
-        $attendances = $query->get();
-
-        return response()->json([
-            'data' => $attendances,
-            'total' => $dataTable->getTotal(new AttendanceRecord()),
-        ], 201);
+        return response()->json($response, 201);
     }
 
     public function create()

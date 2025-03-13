@@ -2,6 +2,7 @@
 
 namespace App\DataTables;
 
+use Illuminate\Http\Request;
 use App\Models\AttendanceRecord;
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
 use Illuminate\Support\Facades\DB;
@@ -20,7 +21,6 @@ class AttendanceRecordDataTable extends DataTable
     public $student;
     public $page = 1;
     public $perPage;
-    public $search;
 
     /**
      * Build the DataTable class.
@@ -50,15 +50,6 @@ class AttendanceRecordDataTable extends DataTable
         if(!empty($this->student)){
             $query->where('attendance_records.student_id', $this->student->id);
         }
-        
-        if(!empty($this->search) && !empty($this->search['value'])){
-            $query->where(function($query){
-                $query->where('users.name', 'like', '%' . $this->search['value'] . '%')  
-                ->orWhere('users.email', 'like', '%' . $this->search['value'] . '%')
-                ->orWhere('school_classes.name', 'like', '%' . $this->search['value'] . '%')
-                ->orWhere('school_subjects.name', 'like', '%' . $this->search['value'] . '%');
-            });
-        }   
 
         return $query;
     }
@@ -110,30 +101,30 @@ class AttendanceRecordDataTable extends DataTable
     public function getColumns(): array
     {
         return [
-            Column::make('date')
-                    ->title('Tanggal')
-                    ->data('date'),
+            Column::make('attendance_records.date as attendance_date')
+                    ->title('Date')
+                    ->data('attendance_date'),
             Column::make('users.name as student_name')
-                    ->title('Nama Siswa')
+                    ->title('Student Name')
                     ->data('student_name'),
             Column::make('attendance_records.grade')
-                    ->title('Tingkat')
+                    ->title('Grade')
                     ->data('grade'),
             Column::make('school_subjects.name as subject_name')
-                    ->title('Mata Pelajaran')
+                    ->title('Subject Name')
                     ->data('subject_name'),
             Column::make('teachers.name as teacher_name')
-                    ->title('Guru')
+                    ->title('Teacher Name')
                     ->data('teacher_name'),
             Column::make('school_classes.name as class_name')
-                    ->title('Kelas')
+                    ->title('Class Name')
                     ->data('class_name'),
             
             Column::make('status')
                     ->title('Status')
                     ->data('status'),
             Column::make('minutes_late')
-                    ->title('Terlambat (menit)')
+                    ->title('Late (minutes)')
                     ->data('minutes_late'),
             Column::computed('action')
                   ->name('attendance_records.id')
@@ -169,6 +160,37 @@ class AttendanceRecordDataTable extends DataTable
     {
         $this->page = $request->get('page', 1);
         $this->perPage = $request->get('per_page', 10);
-        $this->search = $request->get('search', null);
+    }
+
+    public function search(Request $request)
+    {
+        $search = $request->get('search', null);
+        $query = $this->getBaseQuery(new AttendanceRecord());
+
+        if(!empty($search) && !empty($search['value'])){
+            $query->where(function($query) use ($search){
+                $query->where('users.name', 'like', '%' . $search['value'] . '%')  
+                ->orWhere('users.email', 'like', '%' . $search['value'] . '%')
+                ->orWhere('school_classes.name', 'like', '%' . $search['value'] . '%')
+                ->orWhere('school_subjects.name', 'like', '%' . $search['value'] . '%');
+            });
+        }
+
+        $order = $request->get('order', null);
+        if(!empty($order) && isset($order[0]['column'])){
+            $columns = $this->getColumns();
+            
+            $column = $columns[$order[0]['column']];
+            $direction = $order[0]['dir'] ?? 'asc';
+
+            $query->orderBy($column['data'], $order[0]['dir']);
+        }
+
+        $attendances = $query->get();
+
+        return [
+            'data' => $attendances ?? [],
+            'total' => $query->count(),
+        ];
     }
 }

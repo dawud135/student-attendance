@@ -24,14 +24,23 @@ class DashboardController extends Controller
 
     public function index(DashboardRequest $request)
     {
+        $year = Carbon::now()->year;
+        if($request->has('year')) {
+            $year = $request->year;
+        }
+
         $startDt = Carbon::now()->startOfYear();
         if($request->has('startDt')) {
             $startDt = Carbon::parse($request->startDt);
+        } else {
+            $startDt = Carbon::createFromDate($year, 1, 1);
         }
 
         $endDt = Carbon::now()->endOfMonth();
         if($request->has('endDt')) {
             $endDt = Carbon::parse($request->endDt);
+        } else {
+            $endDt = Carbon::createFromDate($year, 12, 31);
         }
 
         $latePerMonth = $this->attendanceRecordRepository->qtyPerMonth(['status' => 'late', 'startDt' => $startDt, 'endDt' => $endDt, 'user_id' => $request->user_id]);
@@ -64,6 +73,7 @@ class DashboardController extends Controller
         ];
 
         return Inertia::render('dashboard', [
+            'year' => $year,
             'userStudent' => $userStudent,
             'latePerMonthChartData' => $latePerMonthChartData,
             'latePerSchoolSubjectChartData' => $latePerSchoolSubjectChartData,

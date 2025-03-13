@@ -10,7 +10,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
-import { PlusIcon, PencilIcon } from 'lucide-react'
+import { PlusIcon, PencilIcon, ArrowUpIcon, ArrowDownIcon } from 'lucide-react'
 import {
   Pagination,
   PaginationContent,
@@ -21,6 +21,15 @@ import {
 } from "@/components/ui/pagination"
 import { router } from '@inertiajs/react'
 import { Input } from '@headlessui/react'
+import AppLayout from '@/layouts/app-layout';
+import { type BreadcrumbItem } from '@/types';
+
+const breadcrumbs: BreadcrumbItem[] = [
+  {
+    title: 'Attendance Record',
+    href: route('attendance-record.index'),
+  },
+];
 
 interface Column {
   name: string
@@ -44,6 +53,7 @@ export default function Index({ columns }: AttendanceRecordProps) {
   const [loading, setLoading] = useState(false)
   const [search, setSearch] = useState('')
   const perPage = 10
+  const [order, setOrder] = useState<{ column: number, direction: 'asc' | 'desc' } | null>(null)
 
   // Fetch attendance records on mount or when page changes
   useEffect(() => {
@@ -56,7 +66,13 @@ export default function Index({ columns }: AttendanceRecordProps) {
           search: {
             value: search,
             regex: false
-          }
+          },
+          order: order ? [
+            {
+              column: order.column,
+              dir: order.direction
+            }
+          ] : null
         }), {
           headers: {
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
@@ -73,7 +89,7 @@ export default function Index({ columns }: AttendanceRecordProps) {
       setLoading(false)
     }
     fetchRecords()
-  }, [currentPage, search])
+  }, [currentPage, search, order])
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page)
@@ -83,9 +99,17 @@ export default function Index({ columns }: AttendanceRecordProps) {
     setSearch(e.target.value)
   }
 
+  const handleOrder = (column: Column) => {
+    let idx = columns.findIndex(c => c.data === column.data);
+    setOrder({
+      column: idx,
+      direction: order?.column === idx && order?.direction === 'asc' ? 'desc' : 'asc'
+    })
+
+  }
 
   return (
-    <>
+    <AppLayout breadcrumbs={breadcrumbs}>
       <Head title="Attendance Records" />
 
       <div className="p-6">
@@ -108,9 +132,22 @@ export default function Index({ columns }: AttendanceRecordProps) {
         <Table>
           <TableHeader>
             <TableRow>
-              {columns.map((column) => (
-                <TableHead key={column.name}>
-                  {column.title}
+              {columns.map((column, idx) => (
+                <TableHead
+                  key={column.name}
+                  className="cursor-pointer"
+                  onClick={() => handleOrder(column)}
+                >
+                  <div className="flex items-center gap-2">
+                    {column.title}
+                    {order?.column === idx && (
+                      order?.direction === 'asc' ? (
+                        <ArrowUpIcon className="w-4 h-4" />
+                      ) : (
+                        <ArrowDownIcon className="w-4 h-4" />
+                      )
+                    )}
+                  </div>
                 </TableHead>
               ))}
               <TableHead>Actions</TableHead>
@@ -180,6 +217,6 @@ export default function Index({ columns }: AttendanceRecordProps) {
           </Pagination>
         </div>
       </div>
-    </>
+    </AppLayout>
   )
 }

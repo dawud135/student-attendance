@@ -32,12 +32,14 @@ class AttendanceRecordSeeder extends Seeder {
             $subject = $subjects->random();
 
             // Random attendance status
-            $status = $faker->randomElement(['on-time', 'late', 'absent']);
+            // $status = $faker->randomElement(['on-time', 'late', 'absent']);
+            $status = 'late';
+
             $minutesLate = ($status === 'late') ? $faker->numberBetween(1, 30) : 0;
             $reason = ($status !== 'on-time') ? $faker->sentence() : null;
 
             if($userStudent->student == null) {
-                dd($userStudent);
+                continue;
             }
 
             AttendanceRecord::create([

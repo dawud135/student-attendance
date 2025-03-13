@@ -48,10 +48,12 @@ export default function Dashboard() {
     const { props } = usePage(); // Get the full page props
 
     const { 
+        year,
         userStudent,    
         latePerMonthChartData, 
         latePerSchoolSubjectChartData,
     } = props as Partial<{
+        year: number;
         userStudent: User;
         latePerMonthChartData: ChartData<"line", (number | Point | null)[], unknown>;
         latePerSchoolSubjectChartData: ChartData<"bar", (number | [number, number] | null)[], unknown>;
@@ -61,9 +63,10 @@ export default function Dashboard() {
     const [searchStudentResults, setSearchStudentResults] = useState<Student[]>([]);
     const [selectedUserStudent, setSelectedUserStudent] = useState<User | null>(userStudent ?? null);
     const [isUserStudentPopoverOpen, setIsUserStudentPopoverOpen] = useState(false);
-
+    const [selectedYear, setSelectedYear] = useState<number>(year ?? new Date().getFullYear());
     const { data, setData, post, processing, errors } = useForm({
         id: selectedUserStudent?.id,
+        year: selectedYear,
     });
 
     const handleUserSearch = async (value: string) => {
@@ -81,63 +84,75 @@ export default function Dashboard() {
     };
 
     // Add URL update function
-    const refreshPageData = (userId: number | null) => {
+    const refreshPageData = (userId: number | null, selectedYear: number) => {
         router.get(route("dashboard"), {
-            user_id: userId
+            user_id: userId,
+            year: selectedYear,
         });
+    };
+
+    const handleYearChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        let y = parseInt(e.target.value) || year || new Date().getFullYear();
+        setSelectedYear(y);
+        refreshPageData(selectedUserStudent?.id ?? null, y);
     };
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Dashboard" />
             <div className="flex h-full flex-1 flex-col justify-end gap-4 rounded-xl p-4">
-                <div className="flex items-end gap-2 mr-5 w-[20rem]">
-                    <Popover open={isUserStudentPopoverOpen} onOpenChange={setIsUserStudentPopoverOpen}>
-                        <PopoverTrigger asChild>
-                            <Button variant="outline" className="w-full justify-start">
-                                {selectedUserStudent ? selectedUserStudent.name : "Select student..."}
-                            </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-80">
-                            <div className="space-y-2">
-                                <Input
-                                    type="search"
-                                    placeholder="Search students..."
-                                    value={searchUserStudentTerm}
-                                    onChange={(e) => handleUserSearch(e.target.value)}
-                                />
-                                <div className="max-h-48 overflow-auto">
-                                    {searchStudentResults.map((userStudent) => (
-                                        <Button
-                                            key={userStudent.id}
-                                            variant="ghost"
-                                            className="w-full justify-start"
-                                            onClick={(e) => {
-                                                setSelectedUserStudent(userStudent);
-                                                setIsUserStudentPopoverOpen(false);
-                                                refreshPageData(userStudent.id);
-                                            }}
-                                        >
-                                            {userStudent.name}
-                                        </Button>
-                                    ))}
+                <div className="flex items-end gap-2 mr-5 max-w-[50rem]">
+                    <div className="flex items-end gap-2 mr-5 w-[5rem]">    
+                        <Input type="number" placeholder="Year" value={selectedYear} onChange={handleYearChange} className="w-full" />
+                    </div>
+                    <div className="flex items-end gap-2 mr-5 w-[16rem]">    
+                        <Popover open={isUserStudentPopoverOpen} onOpenChange={setIsUserStudentPopoverOpen}>
+                            <PopoverTrigger asChild>
+                                <Button variant="outline" className="w-full justify-start">
+                                    {selectedUserStudent ? selectedUserStudent.name : "Select student..."}
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-full">
+                                <div className="space-y-2">
+                                    <Input
+                                        type="search"
+                                        placeholder="Search students..."
+                                        value={searchUserStudentTerm}
+                                        onChange={(e) => handleUserSearch(e.target.value)}
+                                    />
+                                    <div className="max-h-48 overflow-auto">
+                                        {searchStudentResults.map((userStudent) => (
+                                            <Button
+                                                key={userStudent.id}
+                                                variant="ghost"
+                                                className="w-full justify-start"
+                                                onClick={(e) => {
+                                                    setSelectedUserStudent(userStudent);
+                                                    setIsUserStudentPopoverOpen(false);
+                                                    refreshPageData(userStudent.id, selectedYear);
+                                                }}
+                                            >
+                                                {userStudent.name}
+                                            </Button>
+                                        ))}
+                                    </div>
                                 </div>
-                            </div>
-                        </PopoverContent>
-                    </Popover>
-                    {/* Clear Selection Button */}
-                    {selectedUserStudent && (
-                        <button
-                            type="button"
-                            className="p-2 rounded-full bg-gray-200 hover:bg-gray-300 transition"
-                            onClick={() => {
-                                setSelectedUserStudent(null);
-                                refreshPageData(null);
-                            }}
-                        >
-                            <X className="w-4 h-4 text-gray-600" />
-                        </button>
-                    )}
+                            </PopoverContent>
+                        </Popover>
+                        {/* Clear Selection Button */}
+                        {selectedUserStudent && (
+                            <button
+                                type="button"
+                                className="p-2 rounded-full bg-gray-200 hover:bg-gray-300 transition"
+                                onClick={() => {
+                                    setSelectedUserStudent(null);
+                                    refreshPageData(null, selectedYear);
+                                }}
+                            >
+                                <X className="w-4 h-4 text-gray-600" />
+                            </button>
+                        )}
+                    </div>
                 </div>
             </div>
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">

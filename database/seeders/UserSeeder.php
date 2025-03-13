@@ -18,11 +18,11 @@ class UserSeeder extends Seeder {
         $studentRole = Role::firstOrCreate(['name' => 'student']);
 
         // Create Admin (if not exists)
-        if (!User::where('email', 'daud@somewhere.com')->exists()) {
+        if (!User::where('email', 'admin@somewhere.com')->exists()) {
             $admin = User::create([
                 'name' => 'Admin User',
-                'email' => 'daud@somewhere.com',
-                'password' => Hash::make('rahasia123'),
+                'email' => 'admin@somewhere.com',
+                'password' => Hash::make('secret123'),
             ]);
             $admin->assignRole('admin');
             echo "✅ Admin user created.\n";
@@ -31,10 +31,10 @@ class UserSeeder extends Seeder {
         }
 
         // Create Teacher (if not exists)
-        if (!User::where('email', 'teacher@example.com')->exists()) {
+        if (!User::where('email', 'teacher@somewhere.com')->exists()) {
             $teacher = User::create([
-                'name' => 'Fulan LC.',
-                'email' => 'teacher@example.com',
+                'name' => 'Teacher LC.',
+                'email' => 'teacher@somewhere.com',
                 'password' => Hash::make('password'),
             ]);
             $teacher->assignRole('teacher');
@@ -43,10 +43,10 @@ class UserSeeder extends Seeder {
             echo "⚠️ Teacher user already exists.\n";
         }
 
-        if (!User::where('email', 'teacher2@example.com')->exists()) {
+        if (!User::where('email', 'teacher2@somewhere.com')->exists()) {
             $teacher = User::create([
-                'name' => 'Fulan 2 LC.',
-                'email' => 'teacher2@example.com',
+                'name' => 'Teacher 2 LC.',
+                'email' => 'teacher2@somewhere.com',
                 'password' => Hash::make('password'),
             ]);
             $teacher->assignRole('teacher');
