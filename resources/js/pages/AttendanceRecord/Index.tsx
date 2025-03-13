@@ -44,16 +44,17 @@ interface AttendanceRecord {
 
 interface AttendanceRecordProps {
   columns: Column[]
+  order: { column: number, direction: 'asc' | 'desc' } | null
 }
 
-export default function Index({ columns }: AttendanceRecordProps) {
+export default function Index({ columns, order }: AttendanceRecordProps) {
   const [records, setRecords] = useState<AttendanceRecord[]>([])
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [loading, setLoading] = useState(false)
   const [search, setSearch] = useState('')
+  const [columnOrder, setColumnOrder] = useState<{ column: number, direction: 'asc' | 'desc' } | null>(order)
   const perPage = 10
-  const [order, setOrder] = useState<{ column: number, direction: 'asc' | 'desc' } | null>(null)
 
   // Fetch attendance records on mount or when page changes
   useEffect(() => {
@@ -67,10 +68,10 @@ export default function Index({ columns }: AttendanceRecordProps) {
             value: search,
             regex: false
           },
-          order: order ? [
+          order: columnOrder ? [
             {
-              column: order.column,
-              dir: order.direction
+              column: columnOrder.column,
+              dir: columnOrder.direction
             }
           ] : null
         }), {
@@ -89,7 +90,7 @@ export default function Index({ columns }: AttendanceRecordProps) {
       setLoading(false)
     }
     fetchRecords()
-  }, [currentPage, search, order])
+  }, [currentPage, search, columnOrder])
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page)
@@ -101,9 +102,9 @@ export default function Index({ columns }: AttendanceRecordProps) {
 
   const handleOrder = (column: Column) => {
     let idx = columns.findIndex(c => c.data === column.data);
-    setOrder({
+    setColumnOrder({
       column: idx,
-      direction: order?.column === idx && order?.direction === 'asc' ? 'desc' : 'asc'
+      direction: columnOrder?.column === idx && columnOrder?.direction === 'asc' ? 'desc' : 'asc'
     })
 
   }
@@ -140,8 +141,8 @@ export default function Index({ columns }: AttendanceRecordProps) {
                 >
                   <div className="flex items-center gap-2">
                     {column.title}
-                    {order?.column === idx && (
-                      order?.direction === 'asc' ? (
+                    {columnOrder?.column === idx && (
+                      columnOrder?.direction === 'asc' ? (
                         <ArrowUpIcon className="w-4 h-4" />
                       ) : (
                         <ArrowDownIcon className="w-4 h-4" />

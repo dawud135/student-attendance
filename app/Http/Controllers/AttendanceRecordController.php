@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\DB;
 class AttendanceRecordController extends Controller
 {
     // Fetch all attendance records
-    public function index()
+    public function index(Request $request)
     {
         $students = Student::join('users', 'students.user_id', '=', 'users.id')
             ->select('students.id', 'users.name as student_name', 'students.grade')
@@ -26,7 +26,13 @@ class AttendanceRecordController extends Controller
 
         $dataTable = new AttendanceRecordDataTable();
 
+        $order = $request->get('order', [
+            'column' => 0,
+            'direction' => 'desc',
+        ]);
+
         return inertia('AttendanceRecord/Index', [
+            'order' => $order,
             'students' => $students,
             'classes' => $classes,
             'subjects' => $subjects,
